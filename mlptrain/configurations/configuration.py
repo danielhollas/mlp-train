@@ -4,7 +4,7 @@ import numpy as np
 import os
 import json
 import itertools
-from typing import Optional, Union, List, Dict
+from typing import Any, Optional, Union, List, Dict
 from copy import deepcopy
 from autode.atoms import AtomCollection, Atom
 import autode.atoms
@@ -530,6 +530,7 @@ class Configuration(AtomCollection):
         """
         mol_dict = self._load_mol_dict_from_file(filename)
         if mol_dict is not None:
+            self._validate_mol_dict(mol_dict)
             self.mol_dict = mol_dict
             return True
         return False
@@ -719,31 +720,24 @@ class Configuration(AtomCollection):
         else:
             self.mol_dict = {}
 
-    def validate_mol_dict(self) -> bool:
+    def validate_mol_dict(self, mol_dict: dict[str, Any]) -> None:
         """
         Validate that the mol_dict indices are consistent with the current atoms.
 
-        Returns:
-            bool: True if mol_dict is valid, False otherwise
+        raises: ValueError for invalid mol_dict
         """
-        if not self.mol_dict:
-            return True
-
         total_atoms = len(self.atoms)
 
-        for mol_type, molecules in self.mol_dict.items():
+        for mol_type, molecules in mol_dict.items():
             for i, mol_info in enumerate(molecules):
                 start = mol_info.get('start', 0)
                 end = mol_info.get('end', 0)
 
                 # Check bounds
                 if start < 0 or end > total_atoms or start >= end:
-                    logger.warning(
+                    raise ValueError(
                         f'Invalid mol_dict entry: {mol_type}[{i}] has start={start}, end={end}, but total atoms={total_atoms}'
                     )
-                    return False
-
-        return True
 
 
 def _random_rotation(r1: float, r2: float, r3: float) -> np.ndarray:
