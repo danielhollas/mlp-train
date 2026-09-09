@@ -234,9 +234,7 @@ class ConfigurationSet(list):
             return
 
         if not self.allow_duplicates and value in self:
-            logger.warning(
-                'Not appending configuration to set - already present'
-            )
+            logger.info('Not appending configuration to set - already present')
             return
 
         return super().append(value)
@@ -784,8 +782,8 @@ class ConfigurationSet(list):
 
     def __add__(
         self,
-        other: 'Configuration | ConfigurationSet',
-    ) -> 'ConfigurationSet':  # ty:ignore[invalid-method-override]
+        other: object,
+    ) -> ConfigurationSet:
         """Add another configuration or set of configurations onto this one"""
 
         if isinstance(other, Configuration):
